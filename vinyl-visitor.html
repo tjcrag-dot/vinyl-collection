@@ -181,7 +181,7 @@ function render(){
   let list=records.filter(r=>(((r.artist||'')+' '+(r.title||'')).toLowerCase().includes(q))&&(!activeGenre||r.genre===activeGenre));
   list.sort((a,b)=>{
     if(sort==='artist')return sortKey(a.artist||'').localeCompare(sortKey(b.artist||''));
-    if(sort==='year')return(a.year||9999)-(b.year||9999);
+    if(sort==='year')return(parseInt(a.year)||9999)-(parseInt(b.year)||9999);
     return(a.title||'').localeCompare(b.title||'');
   });
   const genres=[...new Set(records.filter(r=>r.genre).map(r=>r.genre))].sort();
