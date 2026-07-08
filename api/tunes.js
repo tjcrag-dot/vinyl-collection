@@ -1,6 +1,6 @@
 const https = require('https');
 
-module.exports = function(req, res) {
+export default function handler(req, res) {
   const term = req.query && req.query.term;
   if (!term) {
     res.status(400).json({ error: 'missing term' });
@@ -20,4 +20,4 @@ module.exports = function(req, res) {
   }).on('error', (e) => {
     res.status(500).json({ error: e.message });
   });
-};
+}
