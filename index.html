@@ -582,7 +582,9 @@ function openModal(id){
   document.getElementById('preview-box').classList.remove('visible');
   document.getElementById('preview-results').innerHTML='';
   hideDupAlert();searchResults=[];selectedIdx=null;
-  ['artist','title','year','genre','label','notes'].forEach(f=>document.getElementById('f-'+f).value=r?(r[f]||''):'');
+  ['artist','title','genre','label','notes'].forEach(f=>document.getElementById('f-'+f).value=r?(r[f]&&String(r[f]).toLowerCase()!=='null'?r[f]:''):'');
+  const yearDisplay=r&&r.year&&String(r.year).toLowerCase()!=='null'?r.year:'';
+  document.getElementById('f-year').value=yearDisplay;
   document.getElementById('f-condition').value=r?(r.condition||''):'';
   document.getElementById('f-artwork-url').value=r?(r.artwork_url||''):'';
   resetArtUpload(r?r.artwork_url:'');
@@ -597,9 +599,10 @@ async function saveRecord(){
   const title=document.getElementById('f-title').value.trim();
   if(!artist||!title){alert('Artist and title are required.');return;}
   const artworkUrl=document.getElementById('f-artwork-url').value.trim()||null;
-  const yearVal=parseInt(document.getElementById('f-year').value);
+  const yearRaw=document.getElementById('f-year').value.trim();
+  const yearVal=yearRaw&&yearRaw.toLowerCase()!=='null'?parseInt(yearRaw):NaN;
   const data={artist,title,genre:document.getElementById('f-genre').value.trim(),label:document.getElementById('f-label').value.trim(),condition:document.getElementById('f-condition').value,notes:document.getElementById('f-notes').value.trim(),artwork_url:artworkUrl};
-  if(!isNaN(yearVal))data.year=yearVal;
+  if(!isNaN(yearVal)&&yearVal>0)data.year=yearVal;
   try{
     let res;
     if(editingId){
@@ -607,7 +610,7 @@ async function saveRecord(){
     }else{
       res=await fetch(AT_URL,{method:'POST',headers:HEADERS,body:JSON.stringify({records:[{fields:data}]})});
     }
-    if(!res.ok)throw new Error(await res.text());
+    if(!res.ok){const errText=await res.text();console.error('Save error:',errText);throw new Error(errText);}
     toast(editingId?'Record updated':'Record added');
     closeModal();await loadRecords();
   }catch(e){alert('Error saving: '+e.message);}
