@@ -196,6 +196,34 @@ function render(){
   `).join('');
 }
 
+async function fetchArtwork(r){
+  const q=encodeURIComponent(r.artist+' '+r.title);
+  const urls=['/api/itunes?q='+q,'https://itunes.apple.com/search?term='+q+'&entity=album&limit=5'];
+  for(const url of urls){
+    try{
+      const res=await fetch(url);
+      const d=await res.json();
+      const results=(d.results||[]).filter(x=>x.artworkUrl100);
+      if(results.length){
+        const match=results.find(x=>x.collectionName&&x.collectionName.toLowerCase().includes(r.title.toLowerCase()))||results[0];
+        const art=match.artworkUrl100.replace('100x100bb','400x400bb');
+        return art;
+      }
+    }catch(e){}
+  }
+  return null;
+}
+
+async function saveArtwork(id, url){
+  try{
+    await fetch(URL_+'/'+id,{
+      method:'PATCH',
+      headers:{...H,'Content-Type':'application/json'},
+      body:JSON.stringify({fields:{artwork_url:url}})
+    });
+  }catch(e){}
+}
+
 function openPanel(artist){
   const list=records.filter(r=>r.artist===artist).sort((a,b)=>(parseInt(a.year)||9999)-(parseInt(b.year)||9999));
   const[bg,fg]=pal(artist);
@@ -204,9 +232,9 @@ function openPanel(artist){
     const art=notNull(r.artwork_url)
       ?`<img class="album-art" src="${esc(r.artwork_url)}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
       :'';
-    const ph=`<div class="album-art-placeholder" style="background:${bg};color:${fg};${notNull(r.artwork_url)?'display:none':''}">${esc(ini(artist))}</div>`;
+    const ph=`<div class="album-art-placeholder" style="background:${bg};color:${fg};${notNull(r.artwork_url)?'display:none':''}" id="ph-${r.id}">${esc(ini(artist))}</div>`;
     const tags=[r.year,r.genre,r.condition].filter(notNull);
-    return`<div class="album-card">
+    return`<div class="album-card" id="card-${r.id}">
       ${art}${ph}
       <div class="album-info">
         <div class="album-title">${esc(r.title)}</div>
@@ -216,6 +244,23 @@ function openPanel(artist){
     </div>`;
   }).join('');
   document.getElementById('overlay').classList.add('open');
+
+  list.filter(r=>!notNull(r.artwork_url)).forEach(async r=>{
+    const url=await fetchArtwork(r);
+    if(!url)return;
+    r.artwork_url=url;
+    const ph=document.getElementById('ph-'+r.id);
+    if(ph){
+      const img=document.createElement('img');
+      img.className='album-art';
+      img.src=url;
+      img.loading='lazy';
+      img.onerror=()=>{img.style.display='none';ph.style.display='flex';};
+      ph.style.display='none';
+      ph.parentNode.insertBefore(img,ph);
+    }
+    saveArtwork(r.id,url);
+  });
   document.getElementById('panel').scrollTop=0;
 }
 
