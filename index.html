@@ -110,6 +110,14 @@ select{cursor:pointer;width:auto;min-width:130px}
 @keyframes scanline{0%,100%{top:15%}50%{top:80%}}
 .scanner-hint{color:rgba(255,255,255,0.7);font-size:14px;text-align:center;max-width:280px}
 .scanner-status{color:#fff;font-size:15px;font-weight:500;min-height:24px;text-align:center}
+ .pick-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center}
+.pick-modal.open{display:flex}
+.pick-card{background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:1.5rem;width:100%;max-width:320px;text-align:center}
+.pick-art{width:180px;height:180px;border-radius:var(--radius);object-fit:cover;margin:0 auto 1rem;display:block}
+.pick-art-ph{width:180px;height:180px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:700;margin:0 auto 1rem}
+.pick-title{font-size:17px;font-weight:700;margin-bottom:4px}
+.pick-artist{font-size:13px;color:var(--text2);margin-bottom:1.25rem}
+.pick-actions{display:flex;gap:8px;justify-content:center}
 </style>
 </head>
 <body>
@@ -122,9 +130,10 @@ select{cursor:pointer;width:auto;min-width:130px}
   <div class="topbar-right">
     <a href="/artist-index.html" style="font-size:13px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.2)">Artists</a>
 <a href="/play-history.html" style="font-size:13px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.2)">History</a>
+    <button class="btn btn-ghost btn-sm" onclick="pickForMe()">🎲 Pick for me</button>
     <span id="topbar-count" style="font-size:13px;color:var(--text2)"></span>
     <button class="btn btn-primary" onclick="openModal()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>¢¢$
       Add LP
     </button>
   </div>
@@ -652,8 +661,32 @@ async function deleteRecord(id){
   }catch(e){alert('Error deleting: '+e.message);}
 }
 
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeScanner();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeScanner();closePick();}});
 loadRecords();
+  function pickForMe(){
+  const cutoff=new Date(Date.now()-14*24*60*60*1000).toISOString();
+  const pool=records.filter(r=>!r.last_played||r.last_played<cutoff);
+  if(!pool.length){toast('Everything played recently — good listening!');return;}
+  const r=pool[Math.floor(Math.random()*pool.length)];
+  const[bg,fg]=colorFor(r.artist||'');
+  const art=r.artwork_url||artCache[(r.artist||'')+'||'+(r.title||'')];
+  document.getElementById('pick-modal').innerHTML=`
+    <div class="pick-card">
+      ${art?`<img class="pick-art" src="${esc(art)}">`:`<div class="pick-art-ph" style="background:${bg};color:${fg}">${esc(initials(r.artist||'?'))}</div>`}
+      <div class="pick-title">${esc(r.title)}</div>
+      <div class="pick-artist">${esc(r.artist)}</div>
+      <div class="pick-actions">
+        <button class="btn btn-ghost" onclick="closePick()">Maybe later</button>
+        <button class="btn btn-primary" onclick="closePick();handlePlay(event,'${r.id}')">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><polygon points="5,3 19,12 5,21"/></svg>Play this
+        </button>
+      </div>
+    </div>`;
+  document.getElementById('pick-modal').classList.add('open');
+}
+function closePick(){document.getElementById('pick-modal').classList.remove('open');}
 </script>
+  <div class="pick-modal" id="pick-modal" onclick="if(event.target===this)closePick()"></div>
+<div class="toast" id="toast"></div>
 </body>
 </html>
