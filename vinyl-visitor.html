@@ -241,13 +241,14 @@ function render(){
 
 function setGenre(g){activeGenre=g;render();}
 loadRecords();
-  function pickForMe(){
+  async function pickForMe(){
   const cutoff=new Date(Date.now()-14*24*60*60*1000).toISOString();
   const pool=records.filter(r=>!r.last_played||r.last_played<cutoff);
   if(!pool.length){alert('Everything played recently — good listening!');return;}
   const r=pool[Math.floor(Math.random()*pool.length)];
   const[bg,fg]=colorFor(r.artist||'');
-  const art=r.artwork_url||artCache[(r.artist||'')+'||'+(r.title||'')];
+  let art=r.artwork_url||artCache[(r.artist||'')+'||'+(r.title||'')];
+if(!art){art=await fetchArt(r.artist,r.title);}
   document.getElementById('pick-modal').innerHTML=`
     <div class="pick-card">
       ${art?`<img class="pick-art" src="${esc(art)}">`:`<div class="pick-art-ph" style="background:${bg};color:${fg}">${esc(initials(r.artist||'?'))}</div>`}
