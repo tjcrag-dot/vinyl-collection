@@ -77,7 +77,7 @@ select{cursor:pointer;width:auto;min-width:130px}
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       Play history
     </a>
-    <button class="btn btn-ghost btn-sm" onclick="pickForMe()">🎲 Pick for me</button>
+    <button style="display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--text2);text-decoration:none;padding:5px 14px;border-radius:100px;border:0.5px solid var(--border2);background:none;cursor:pointer;font-family:inherit" onclick="pickForMe()">🎲 Pick for me</button>
   </div>
 </div>
 
@@ -247,7 +247,7 @@ loadRecords();
   if(!pool.length){alert('Everything played recently — good listening!');return;}
   const r=pool[Math.floor(Math.random()*pool.length)];
   const[bg,fg]=colorFor(r.artist||'');
-  const art=r.artwork_url;
+  const art=r.artwork_url||artCache[(r.artist||'')+'||'+(r.title||'')];
   document.getElementById('pick-modal').innerHTML=`
     <div class="pick-card">
       ${art?`<img class="pick-art" src="${esc(art)}">`:`<div class="pick-art-ph" style="background:${bg};color:${fg}">${esc(initials(r.artist||'?'))}</div>`}
