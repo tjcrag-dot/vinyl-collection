@@ -10,10 +10,11 @@
 @media(prefers-color-scheme:dark){:root{--bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;--text:#f0efea;--text2:#a0a09a;--text3:#6a6a65;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2)}}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg2);color:var(--text);min-height:100vh}
 .topbar{background:var(--bg);border-bottom:0.5px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:56px;position:sticky;top:0;z-index:100;overflow:hidden}
-@media(max-width:640px){.topbar{padding:0 .75rem;gap:4px;height:50px}#status-text,#topbar-count,#status-dot{display:none!important}.btn-sm{height:28px;padding:0 8px;font-size:12px}.btn-primary{height:30px;padding:0 10px;font-size:13px}}
+@media(max-width:640px){.topbar{padding:0 .75rem;gap:4px;height:50px}#status-text,#topbar-count,#status-dot{display:none!important}.btn-sm{height:28px;padding:0 8px;font-size:12px}.btn-primary{height:30px;padding:0 10px;font-size:13px}.hide-mobile{display:none}#mobile-nav{display:flex;gap:8px;padding:8px 12px;background:var(--bg);border-bottom:0.5px solid var(--border)}#mobile-nav a{font-size:13px;color:var(--text2);text-decoration:none;padding:4px 10px;border-radius:8px;border:0.5px solid var(--border2)}}
 .logo{font-size:17px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;letter-spacing:-0.02em}
 .logo svg{width:20px;height:20px}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+#mobile-nav{display:none}
 .page{max-width:1100px;margin:0 auto;padding:1.5rem}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1.5rem}
 .stat{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem}
@@ -129,8 +130,8 @@ select{cursor:pointer;width:auto;min-width:130px}
   </div>
   <span style="font-size:12px;color:var(--text3);display:flex;align-items:center"><span class="status-dot" id="status-dot"></span><span id="status-text">connecting…</span></span>
   <div class="topbar-right">
-    <a href="/artist-index.html" style="font-size:13px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.2)">Artists</a>
-<a href="/play-history.html" style="font-size:13px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.2)">History</a>
+   <a href="/artist-index.html" class="hide-mobile" style="font-size:13px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.2)">Artists</a>
+<a href="/play-history.html" class="hide-mobile" style="font-size:13px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.2)">History</a>
     <button class="btn btn-ghost btn-sm" onclick="pickForMe()">🎲 Pick for me</button>
     <span id="topbar-count" style="font-size:13px;color:var(--text2)"></span>
     <button class="btn btn-primary" onclick="openModal()">
@@ -138,6 +139,7 @@ select{cursor:pointer;width:auto;min-width:130px}
     </button>
   </div>
 </div>
+<div id="mobile-nav"><a href="/artist-index.html">Artists</a><a href="/play-history.html">History</a></div>
 
 <div class="page">
   <div class="stats">
@@ -687,6 +689,6 @@ loadRecords();
 function closePick(){document.getElementById('pick-modal').classList.remove('open');}
 </script>
   <div class="pick-modal" id="pick-modal" onclick="if(event.target===this)closePick()"></div>
-<div class="toast" id="toast"></div>
+
 </body>
 </html>
